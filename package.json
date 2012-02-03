@@ -2,7 +2,7 @@
   "author": "Andrew J. Stone <andrew.j.stone.1@gmail.com>",
   "name": "dynamo-schema",
   "description": "Simple Schema validation for DynamoDB style schemas",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": {
     "type": "git",
     "url": "git://github.com/andrewjstone/dynamo-schema.git"

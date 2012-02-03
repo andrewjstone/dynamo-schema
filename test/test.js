@@ -68,6 +68,18 @@ describe('sanitize and parse a valid object', function() {
   });
 });
 
+describe('sanitize and parse a list of valid objects', function() {
+  it ('should return the original list', function() {
+    var schema = new Schema({id: 'S', created_at: 'N'});
+    var objects = [{id: 'Andrew', created_at: 1}, {id: 'Stone', created_at: 2}];
+    var new_objects = schema.parse(schema.sanitize(objects)); 
+    assert.deepEqual(new_objects[0].id, objects[0].id);
+    assert.deepEqual(new_objects[0].created_at, objects[0].created_at);
+    assert.deepEqual(new_objects[1].id, objects[1].id);
+    assert.deepEqual(new_objects[1].created_at, objects[1].created_at);
+  });
+});
+
 describe('sanitize_string', function() {
   
   describe('when a string is passed in', function() {

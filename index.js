@@ -32,18 +32,57 @@ Schema.prototype.build_tree = function() {
   }
 };
 
-// Parse a dynamo object and return one without types
+// Return a dynamo formatted object or list of dynamo formatted objects
+// {
+//   id: {S : 'joemama'},
+//   created_at: {N: '12345'},
+//   colors: {SS: ['blue', 'red']}
+//   nums: {NN: ['12345', '67890']}
+// }
+//
+// If a strict mode is not on and an attribute not in the schema is given, just ignore it
+Schema.prototype.sanitize = function(data) {
+  var self = this;
+  function sanitize_object(obj) { 
+    var rv = {};
+    for (var k in obj) {
+      if (self.strict && !self.tree[k]) throw new Error('Invalid Attribute '+k);
+      if (self.tree[k]) {
+        var sanitized = self.tree[k].sanitize(k, obj[k], self.strict);   
+        rv[k] = self.format(k, sanitized);
+      }
+    }
+    return rv;
+  }
+  if (!isArray(data)) return sanitize_object(data);
+  var list = [];
+  data.forEach(function(obj) {
+    list.push(sanitize_object(obj));
+  });
+  return list;
+};
+
+// Parse a dynamo object (or list) and return one (or a list) without types
 // If an attribute isn't in the schema don't return it in the new object
 // If `bignums` is set then return the numberstring and not a parsed number
-Schema.prototype.parse = function(dynamo_object, bignums) {
-  var rv = {};
-  for (var k in dynamo_object) {
-    if (this.strict && !this.tree[k]) throw new Error('Invalid Attribute '+k);
-    if (this.tree[k]) {
-      rv[k] = this.tree[k].parse(k, dynamo_object[k], bignums);   
+Schema.prototype.parse = function(data, bignums) {
+  var self = this;
+  function parse_object(dynamo_object) {
+    var rv = {};
+    for (var k in dynamo_object) {
+      if (self.strict && !self.tree[k]) throw new Error('Invalid Attribute '+k);
+      if (self.tree[k]) {
+        rv[k] = self.tree[k].parse(k, dynamo_object[k], bignums);   
+      }
     }
+    return rv;
   }
-  return rv;
+  if (!isArray(data)) return parse_object(data);
+  var list = [];
+  data.forEach(function(obj) {
+    list.push(parse_object(obj));
+  });
+  return list;
 };
 
 function parse_error(attr, val) {
@@ -75,27 +114,6 @@ function parse_number_set(attr, val, bignums) {
     return rv;
   };
   parse_error(attr, val);
-};
-
-// Return a dynamo formatted object
-// {
-//   id: {S : 'joemama'},
-//   created_at: {N: '12345'},
-//   colors: {SS: ['blue', 'red']}
-//   nums: {NN: ['12345', '67890']}
-// }
-//
-// If a strict mode is not on and an attribute not in the schema is given, just ignore it
-Schema.prototype.sanitize = function(data) {
-  var rv = {};
-  for (var k in data) {
-    if (this.strict && !this.tree[k]) throw new Error('Invalid Attribute '+k);
-    if (this.tree[k]) {
-      var sanitized = this.tree[k].sanitize(k, data[k], this.strict);   
-      rv[k] = this.format(k, sanitized);
-    }
-  }
-  return rv;
 };
 
 // Attach the following functions to the Schema object just for testing
