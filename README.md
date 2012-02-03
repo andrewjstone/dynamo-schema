@@ -5,7 +5,7 @@ dynamo-schema is a sanitization and validation module for Amazon DynamoDB data m
 ```javascript
 var Schema = require('dynamo-schema');
 
-schema = new Schema({
+var schema = new Schema({
   name: 'S',
   created_at: 'N',
   colors: 'SS',
